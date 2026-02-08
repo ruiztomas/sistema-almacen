@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Caja - Almacen</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<h1>Caja Registradora</h1>
+<input type="text" id="buscar" placeholder="Buscar producto...">
+<table>
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Cant.</th>
+            <th>Precio</th>
+            <th>Subtotal</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody id="tablaVenta"></tbody>
+</table>
+<h2>Stock bajo</h2>
+<ul id="alertas"></ul>
+<h2>Total: $<span id="total">0</span></h2>
+<label>
+    <input type="checkbox" id="fiado">Venta fiada
+</label>
+<select id="cliente"></select>
+<button id="finalizar">Finalizar venta</button>
+<h2>Cierre del dia</h2>
+<div id="cierre"></div>
+<button id="verCierre">Ver cierre de caja del dia</button>
+<scrpt src="js/caja.js"></scrpt>
+</body>
+</html>
