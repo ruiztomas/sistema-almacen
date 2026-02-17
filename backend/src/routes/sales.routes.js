@@ -78,4 +78,20 @@ router.get('/daily-summary',async(req,res)=>{
     });
 });
 
+router.get('/by-date/:fecha',async(req,res)=>{
+    const fecha=new Date(req.params.fecha);
+
+    const inicio=new Date(fecha);
+    inicio.setHours(0,0,0,0);
+
+    const fin=new Date(fecha);
+    fin.setHours(23,59,59,999);
+    
+    const ventas=await Sale.find({
+        createdAt:{$gte:inicio ,$lte: fin}
+    }).populate('cliente');
+
+    res.json(ventas);
+});
+
 module.exports=router;
