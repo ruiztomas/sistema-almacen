@@ -1,8 +1,9 @@
 const express=require('express');
 const router=express.Router();
 const Expense=require('../models/Expense');
+const {auth, onlyAdmin}=require('../middleware/auth.middleware');
 
-router.post('/',async(req,res)=>{
+router.post('/', auth, onlyAdmin, async(req,res)=>{
     const expense=new Expense(req.body);
     await expense.save();
     res.status(201).json(expense);

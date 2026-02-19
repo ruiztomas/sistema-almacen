@@ -1,4 +1,9 @@
 const API='http://IP-SERVIDOR:3000/api';
+const token=localStorage.getItem('token');
+
+if(!token){
+    window.location.href='login.html';
+}
 
 let productos=[];
 let venta=[];

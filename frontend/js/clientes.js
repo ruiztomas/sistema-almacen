@@ -1,5 +1,10 @@
 const API='https://IP-SERVIDOR:3000/api';
 const tabla=document.getElementById('tablaClientes');
+const token = localStorage.getItem('token');
+
+if (!token) {
+  window.location.href = 'login.html';
+}
 
 function cargarClientes(){
     fetch(`${API}/clients`)

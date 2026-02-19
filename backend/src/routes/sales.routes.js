@@ -5,7 +5,7 @@ const Product=require('../models/Product');
 const Client=require('../models/Client');
 const Expense=require('../models/Expense');
 
-router.post('/', async(req,res)=>{
+router.post('/', auth, async(req,res)=>{
     try{
         const {items, clienteId, fiado, pago}=req.body;
         let total=0;
@@ -95,7 +95,7 @@ router.get('/by-date/:fecha',async(req,res)=>{
     res.json(ventas);
 });
 
-router.get('/monthly-summary/:year/:month',async(req,res)=>{
+router.get('/monthly-summary/:year/:month',auth, onlyAdmin, async(req,res)=>{
     const {year, month}=req.params;
 
     const inicio=new Date(year, month -1, 1);

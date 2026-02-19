@@ -1,5 +1,10 @@
 const API='http://IP-SERVIDOR:3000/api';
 const tabla=document.getElementById('tablaHistorial').value;
+const token = localStorage.getItem('token');
+
+if (!token) {
+  window.location.href = 'login.html';
+}
 
 document.getElementById('buscar').onclick=()=>{
     const fecha=document.getElementById('fecha').value;
