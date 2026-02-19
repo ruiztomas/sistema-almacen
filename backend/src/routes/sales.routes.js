@@ -3,6 +3,7 @@ const router=express.Router();
 const Sale=require('../models/Sale');
 const Product=require('../models/Product');
 const Client=require('../models/Client');
+const Expense=require('../models/Expense');
 
 router.post('/', async(req,res)=>{
     try{
@@ -92,6 +93,43 @@ router.get('/by-date/:fecha',async(req,res)=>{
     }).populate('cliente');
 
     res.json(ventas);
+});
+
+router.get('/monthly-summary/:year/:month',async(req,res)=>{
+    const {year, month}=req.params;
+
+    const inicio=new Date(year, month -1, 1);
+    const fin=new Date(year, month, 0, 23, 59, 59);
+
+    const ventas=await Expense.find({
+        createdAt:{$gte: inicio, $lte: fin}
+    });
+
+    const gastos=await Expense.find({
+        fecha:{$gte: inicio, $lte: fin}
+    });
+
+    let totalVentas=0;
+    let totalFiado=0;
+    let totalGastos=0;
+
+    ventas.forEach(v=>{
+        totalVentas+=v.total;
+        if(v.fiado)totalFiado+=v.total;
+    });
+
+    gastos.forEach(g=>{
+        totalGastos+=g.monto;
+    });
+
+    res.json({
+        mes: `${month}/${year}`,
+        totalVentas,
+        totalFiado,
+        totalCobrado:totalVentas-totalFiado,
+        totalGastos,
+        gananciaEstimada:totalVentas-totalGastos
+    });
 });
 
 module.exports=router;
