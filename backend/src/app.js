@@ -9,7 +9,7 @@ const authRoutes=require('./routes/auth.routes');
 const app=express();
 
 app.use(cors());
-app.use(express.join());
+app.use(express.json());
 app.use('/api/products', productsRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/clients', clientsRoutes);

@@ -5,7 +5,7 @@ const Product=require('../models/Product');
 const Client=require('../models/Client');
 const Expense=require('../models/Expense');
 
-router.post('/', auth, async(req,res)=>{
+router.post('/', async(req,res)=>{
     try{
         const {items, clienteId, fiado, pago}=req.body;
         let total=0;
@@ -95,7 +95,7 @@ router.get('/by-date/:fecha',async(req,res)=>{
     res.json(ventas);
 });
 
-router.get('/monthly-summary/:year/:month',auth, onlyAdmin, async(req,res)=>{
+router.get('/monthly-summary/:year/:month', async(req,res)=>{
     const {year, month}=req.params;
 
     const inicio=new Date(year, month -1, 1);
@@ -130,6 +130,29 @@ router.get('/monthly-summary/:year/:month',auth, onlyAdmin, async(req,res)=>{
         totalGastos,
         gananciaEstimada:totalVentas-totalGastos
     });
+});
+
+router.get('/sales/hourly-summary', async (req, res) => {
+
+    const hoy = new Date();
+    hoy.setHours(0,0,0,0);
+
+    const ventas = await Sale.aggregate([
+        {
+            $match: {
+                createdAt: { $gte: hoy }
+            }
+        },
+        {
+            $group: {
+                _id: { $hour: "$createdAt" },
+                total: { $sum: "$total" }
+            }
+        },
+        { $sort: { _id: 1 } }
+    ]);
+
+    res.json(ventas);
 });
 
 module.exports=router;

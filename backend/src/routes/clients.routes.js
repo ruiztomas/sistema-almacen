@@ -3,7 +3,7 @@ const router=express.Router();
 const Client=require('../models/Client');
 const Sale=require('../models/Sale');
 
-router.post('/',async(res,res)=>{
+router.post('/',async(req,res)=>{
     const client=new Client(req.body);
     await client.save();
     res.status(201).json(client);

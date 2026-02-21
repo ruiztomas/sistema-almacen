@@ -22,7 +22,10 @@ function cargarGastos(){
 document.getElementById('guardar').onclick=()=>{
     fetch(`${API}/expenses`,{
         method:'POST',
-        headers:{'Content-Type':'application/json'},
+        headers:{
+            'Content-Type':'application/json',
+            'Authorization':'Bearer'+token
+        },
         body: JSON.stringify({
             descripcion: document.getElementById('descripcion').value,
             categoria:document.getEelementById('categoria').value,
