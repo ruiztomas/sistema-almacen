@@ -1,5 +1,5 @@
 const jwt=require('jsonwebtoken');
-const SECRET='supersecreto';
+const SECRET="supersecreto";
 
 function auth(req,res,next){
     const token=req.headers.authorization?.split(' ')[1];
