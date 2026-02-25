@@ -5,7 +5,7 @@ const Product=require('../models/Product');
 const Client=require('../models/Client');
 const Expense=require('../models/Expense');
 
-router.post('/', async(req,res)=>{
+router.post('/', async(req,res,next)=>{
     try{
         const {items, clienteId, fiado, pago}=req.body;
         let total=0;
@@ -49,7 +49,7 @@ router.post('/', async(req,res)=>{
         }
         res.status(201).json(sale);
     }catch(error){
-        res.status(400).json({error: error.message});
+        next(error);
     }
 });
 

@@ -3,7 +3,7 @@ const router=express.Router();
 const Expense=require('../models/Expense');
 const {auth}=require('../middleware/auth.middleware');
 
-router.get('/',auth,async(req,res)=>{
+router.get('/',auth,async(req,res, next)=>{
     try{
         let match={};
         if(req.user.role !== 'admin'){
@@ -41,7 +41,7 @@ router.get('/',auth,async(req,res)=>{
             latest: latestExpenses
         });
     }catch(error){
-        res.status(500).json({message: 'Error al cargar dashboard'});
+        next(error);
     }
 });
 

@@ -3,17 +3,19 @@ const router=express.Router();
 const Expense=require('../models/Expense');
 const {body, validationResult}=require('express-validator');
 const {auth, onlyAdmin}=require('../middleware/auth.middleware');
+const upload = require('../middleware/upload.middleware');
 
 //POST /api/expenses  *Solo ADMIN puede crear gastos*
 router.post(
     '/', 
     auth,
+    upload.single('comprobante'),
     [
         body('description').notEmpty().withMessage('La descripcion es obligatoria'),
         body('categoria').notEmpty().withMessage('La categoria es obligatoria'),
         body('monto').isNumeric().withMessage('El monto debe ser un numero'),
     ],
-    async(req,res)=>{
+    async(req,res, next)=>{
     try{ 
         const errors=validationResult(req);
         if(!errors.isEmpty()){
@@ -21,17 +23,18 @@ router.post(
         }
         const expense=new Expense({
             ...req.body,
-            user:req.user.id
+            user:req.user.id,
+            comprobante:req.file?req.file.filename:null
         });
         await expense.save();
         res.status(201).json(expense);
     }catch(error){
-        res.status(500).json({message: 'Error al crear gasto', error: error.message});
+        next(error);
     }
 });
 
 //GET /api/expenses *Cualquier usuario autenticado puede ver gastos*
-router.get('/', auth, async(req,res)=>{
+router.get('/', auth, async(req,res, next)=>{
     try{
         const {page=1, limit=5, categoria, desde, hasta}=req.query;
         let filter={};
@@ -62,12 +65,12 @@ router.get('/', auth, async(req,res)=>{
             data: expenses
         });
     }catch(error){
-        res.status(500).json({message: 'Error al obtener gastos', error:error.message});
+        next(error);
     }
 });
 
 //PUT /api/expenses/:id *Actualizar datos de gastos*
-router.put('/:id',auth, async(req,res)=>{
+router.put('/:id',auth, async(req,res,next)=>{
     try{
         const expense=await Expense.findById(req.params.id);
 
@@ -85,12 +88,12 @@ router.put('/:id',auth, async(req,res)=>{
         );
         res.json(updatedExpense);
     }catch(error){
-        res.status(500).json({message:"Erro al actualizar gasto"});
+        next(error);
     }
 });
 
 //DELETE /api/expenses/:id *Eliminar gasto*
-router.delete('/:id',auth,async(req,res)=>{
+router.delete('/:id',auth,async(req,res,next)=>{
     try{
         const expense=await Expense.findById(req.params.id);
 
@@ -104,12 +107,12 @@ router.delete('/:id',auth,async(req,res)=>{
         await Expense.findByIdAndDelete(req.params.id);
         res.json({message:"Gasto eliminado correctamente"});
     }catch(error){
-        res.status(500).json({message:"Error al eliminar gasto"});
+        next(error);
     }
 });
 
 //GET /api/expenses/stats/total *Total de gastos*
-router.get('/stats/total',auth,async(req,res)=>{
+router.get('/stats/total',auth,async(req,res,next)=>{
     try{
         let match={};
         //Si no es admin, solo sus gastos
@@ -129,12 +132,12 @@ router.get('/stats/total',auth,async(req,res)=>{
             total:result[0]?.total || 0
         });
     }catch(error){
-        res.status(500).json({message:'Error al calcular total'});
+        next(error);
     }
 });
 
 //GET /api/expenses/stats/bycategory  *Total de gastos por categoria*
-router.get('/stats/by-category',auth,async(req,res)=>{
+router.get('/stats/by-category',auth,async(req,res,next)=>{
     try{
         let match={};
         if(req.user.role !=='admin'){
@@ -152,7 +155,7 @@ router.get('/stats/by-category',auth,async(req,res)=>{
         ]);
         res.json(result);
     }catch(error){
-        res.status(500).json({message:"Error al calcular estadisticas"})
+        next(error);
     }
 })
 

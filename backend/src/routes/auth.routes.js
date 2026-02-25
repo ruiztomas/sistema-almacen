@@ -3,7 +3,7 @@ const router=express.Router();
 const jwt=require('jsonwebtoken');
 const User=require('../models/User');
 
-const SECRET='supercreto';
+const SECRET='supersecreto';
 
 router.post('/register', async(req,res)=>{
     const user=new User(req.body);

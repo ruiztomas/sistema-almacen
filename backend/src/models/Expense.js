@@ -22,6 +22,9 @@ const expenseSchema=new mongoose.Schema({
         ref:'User',
         required:true
     },
+    comprobante:{
+        type:String
+    },
     observaciones: String
 },{timestamps:true});
 
