@@ -44,19 +44,37 @@ router.delete('/:id', async(req, res)=>{
 });
 
 router.get('/inventory-value',async(req,res)=>{
-    const products=await Product.find({activo:true});
-    let total=0;
-    products.forEach(p=>{
-        if(p.tipoVenta==='unidad'){
-            total+=p.stock*p.precioCosto;
-        }
-        if(p.tipoVenta==='peso'){
-            total+=p.stockKg*p.precioCosto;
-        }
-    });
-    res.json({
-        dineroInvertido:total
-    });
+    try{
+        const result=await Product.aggregate([
+            {
+                $project:{
+                    valorUnidad:{ $multiply: ["$stock", "$precioCosto"]},
+                    valorPeso: { $multiply: ["$stockKg", "$precioCosto"]}
+                }
+            },
+            {
+                $project:{
+                    valorTotalProducto:{ $add: ["$valorUnidad", "$valorPeso"]}
+                }
+            },
+            {
+                $group:{
+                    _id:null,
+                    total:{$sum:"$valorTotalProducto"}
+                }
+            }
+        ]);
+        res.json({
+            total: result[0]?.total || 0
+        });
+    }catch(error){
+        res.status(500).json({error:"Error calculando inventario"});
+    }
+});
+
+router.get('/count', async(req,res)=>{
+    const total=await Product.countDocuments({activo:true});
+    res.json({total});
 });
 
 router.get('/category/:cat',async(req,res)=>{
@@ -78,7 +96,7 @@ router.post('/:id/restock',async(req,res)=>{
     }
     await product.save();
 
-    await Movement.create({
+    await InventoryMovement.create({
         producto: product._id,
         tipo:"entrada",
         cantidad,
