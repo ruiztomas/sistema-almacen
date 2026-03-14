@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 
 function Expenses(){
     const [expenses, setExpenses]=useState([]);
@@ -8,23 +8,39 @@ function Expenses(){
     const [categoria,setCategoria]=useState('');
     const [amount,setAmount]=useState('');
     const [comprobante, setComprobante]=useState(null);
+    const [fileError, setFileError]=useState('');
+    const [preview, setPreview]=useState(null);
     const [editingId,setEditingId]=useState(null);
     const [filterCategoria, setFilterCategoria]=useState('');
+    const [filterDesde, setFilterDesde]=useState('');
+    const [filterHasta,setFilerHasta]=useState('');
     const [page, setPage]=useState(1);
     const [totalPages, setTotalPages]=useState(1);
 
     const [total, setTotal]=useState(0);
     const [categoryData, setCategoryData]=useState([]);
 
+    const COLORS=["#8884d8", "#82ca9d", "#ffc658", "#ff7f50", "#00bfff"];
+
+    const formatCurrency=(value)=>{
+        return new Intl.NumberFormat('es-Ar',{
+            style:'currency',
+            currency:'ARS'
+        }).format(value);
+    };
+
     const fetchExpenses=async(pageNumber=1)=>{
         try{
             const res=await api.get('/expenses',{
                 params:{
                     page: pageNumber,
-                    categoria: filterCategoria
+                    categoria: filterCategoria,
+                    desde: filterDesde,
+                    hasta: filterHasta
                 }
             });
-            setExpenses(res.data.data || []);
+            const sorted=res.data.data?.sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)) || [];
+            setExpenses(sorted);
             setPage(res.data.page);
             setTotalPages(res.data.totalPages);
         }catch(error){
@@ -44,9 +60,10 @@ function Expenses(){
     const fetchCategoryStats=async()=>{
         try{
             const res=await api.get('/expenses/stats/by-category');
-            const data=res.data.map(item=>({
+            const data=res.data.map((item,index)=>({
                 categoria: item._id,
-                total: item.total
+                total: item.total,
+                color: COLORS[index % COLORS.length],
             }));
             setCategoryData(data);
         }catch(error){
@@ -58,7 +75,7 @@ function Expenses(){
         fetchExpenses(1);
         fetchTotal();
         fetchCategoryStats();
-    },[filterCategoria]);
+    },[filterCategoria, filterDesde, filterHasta]);
 
     const handleSubmit=async(e)=>{
         e.preventDefault();
@@ -149,8 +166,37 @@ function Expenses(){
                     style={{flex: '1 1 150px'}}
                 />
 
-                <input type="file" onChange={(e)=>setComprobante(e.target.files[0])} style={{flex:'1 1 150px'}} />
+                <input 
+                    type="file" 
+                    onChange={(e)=>{
+                        const file=e.target.files[0];
+                        if(!file)return;
 
+                        const validTypes=['image/jpeg','image/jpg','image/png','application/pdf'];
+                        if(!validTypes.includes(file.type)){
+                            setFileError('Archivo invalido. Solo JPG, PNG o PDF.');
+                            setComprobante(null);
+                            setPreview(null);
+                            return;
+                        }
+                        setFileError('');
+                        setComprobante(file);
+
+                        if(file.type.startsWith('image/')){
+                            const reader=new FileReader();
+                            reader.onloadend=()=>setPreview(reader.result);
+                            reader.readAsDataURL(file);
+                        }else{
+                            setPreview(null);
+                        }
+                    }}
+                />
+                {fileError && <p style={{color:'red'}}>{fileError}</p>}
+                {preview &&(
+                    <div style={{marginTop:'10px'}}>
+                        <img src={preview} alt="Preview" style={{width:'150px', border:'1px solid #ccc'}}></img>
+                    </div>
+                )}
                 <button type="submit" style={{padding:'8px 16px', backgroundColor: '#4CAF50', color:'white', border:'none', cursor:'pointer'}}>
                     {editingId ? "Actualizar":"Agregar"}
                 </button>
@@ -169,19 +215,53 @@ function Expenses(){
                     <option value="Cigarrillos">Cigarrillos</option>
                     <option value="Otros">Otros</option>
                 </select>
+                <input 
+                    type="date"
+                    value={filterDesde}
+                    onChange={(e)=>setFilterDesde(e.target.value)}
+                />
+                <input 
+                    type="date"
+                    value={filterHasta}
+                    onChange={(e)=>setFilerHasta(e.target.value)}
+                />
             </div>
 
-            <h3>Total de gastos:${total}</h3>
+            <h3>Total de gastos:{formatCurrency(total)}</h3>
 
             <h3>Gastos por categoria</h3>
-            <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={categoryData}>
-                    <XAxis dataKey="categoria" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="total" fill="#8884d8" />
-                </BarChart>
-            </ResponsiveContainer>
+            <div style={{display:'flex', gap:'2rem', flexWrap:'wrap'}}>
+                <ResponsiveContainer width="60%" height={300}>
+                    <BarChart data={categoryData}>
+                        <XAxis dataKey="categoria" />
+                        <YAxis />
+                        <Tooltip formatter={(value)=>formatCurrency(value)} />
+                        <Bar dataKey="total">
+                            {categoryData.map((entry, index)=>{
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                            })}
+                        </Bar>
+                    </BarChart>
+                </ResponsiveContainer>
+                <ResponsiveContainer width="35%" height={300}>
+                    <PieChart>
+                        <Pie
+                            data={categoryData}
+                            dataKey="total"
+                            nameKey="categoria"
+                            outerRadius={100}
+                            label={(entry) => entry.categoria}
+                        >
+                            {categoryData.map((entry, index) => (
+                                <Cell key={`pie-${index}`} fill={entry.color} />
+                            ))}
+                        </Pie>
+                        <Legend />
+                        <Tooltip formatter={(value) => formatCurrency(value)} />
+                    </PieChart>
+                </ResponsiveContainer>
+
+            </div>
 
             <h2>Lista de gastos</h2>
             <table border="1" style={{width:'100%', borderCollapse:'collapse', marginTop:'10px'}}>
@@ -198,10 +278,13 @@ function Expenses(){
 
                 <tbody>
                     {Array.isArray(expenses)&&expenses.map((expense)=>(
-                        <tr key={expense._id}>
+                        <tr 
+                            key={expense._id}
+                            style={{backgroundColor:expense.monto>50000 ? '#ffe0e0' : 'transparent'}}
+                        >
                             <td>{expense.description}</td>
                             <td>{expense.categoria}</td>
-                            <td>{expense.monto}</td>
+                            <td>{formatCurrency(expense.monto)}</td>
                             <td>{new Date(expense.fecha).toLocaleString()}</td>
                             <td>
                                 {expense.comprobante ? (
