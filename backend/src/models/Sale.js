@@ -14,7 +14,9 @@ const saleSchema=new mongoose.Schema({
             },
             cantidad: Number,
             precio: Number,
-            subtotal: Number
+            precioCosto:Number,
+            subtotal: Number,
+            ganancia: Number
         }
     ],
     total: Number,
