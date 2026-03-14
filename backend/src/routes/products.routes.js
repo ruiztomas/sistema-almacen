@@ -43,7 +43,7 @@ router.delete('/:id', async(req, res)=>{
     res.json({message: 'Producto desactivado'});
 });
 
-router.get('/inventory-value',async(res,res)=>{
+router.get('/inventory-value',async(req,res)=>{
     const products=await Product.find({activo:true});
     let total=0;
     products.forEach(p=>{
@@ -85,6 +85,47 @@ router.post('/:id/restock',async(req,res)=>{
         precioCosto: product.precioCosto
     });
     res.json(product);
+});
+
+router.get('/restock-alerts', async(req,res)=>{
+    const products=await Product.find({activo:true});
+    const faltantes=[];
+    products.forEach(p=>{
+        if(p.tipoVenta==="unidad"){
+            if(p.stock<=p.stockMinimo){
+                faltantes.push(p);
+            }
+        }
+        if(p.tipoVenta==="peso"){
+            if(p.stockKg<=p.stockMinimo){
+                faltantes.push(p);
+            }
+        }
+    });
+    res.json(faltantes);
+});
+
+router.get('/restock-plan',async(req,res)=>{
+    const products=await Product.find({activo:true});
+    const reposicion=[];
+    let dineroNecesario=0;
+    products.forEach(p=>{
+        let stockActual=p.tipoVenta==="unidad" ? p.stock : p.stockKg;
+        if(stockActual<=p.stockMinimo){
+            const cantidadComprar=(p.stockMinimo*2)-stockActual;
+            const costo=cantidadComprar*p.precioCosto;
+            dineroNecesario+=costo;
+            reposicion.push({
+                producto:p.nombre,
+                comprar:cantidadComprar,
+                costo
+            });
+        }
+    });
+    res.json({
+        productos: reposicion,
+        dineroNecesario
+    });
 });
 
 module.exports=router;

@@ -1,7 +1,7 @@
 const mongoose=require("mongoose"); 
-const movementSchema=new mongoose.Schema({
+const inventoryMovementSchema=new mongoose.Schema({
     producto:{
-        type:mongoose.Schema.Types.ObjecctId,
+        type:mongoose.Schema.Types.ObjectId,
         ref:"Product",
         required:true
     },
@@ -12,10 +12,10 @@ const movementSchema=new mongoose.Schema({
     },
     cantidad:{
         type:Number,
-        required:tmongoose.rusted,
+        required:true
     },
     precioCosto:Number,
     nota:String
 },{timestamps:true});
 
-module.exports=mongoose.model("InventoryMovement", movementSchema);
+module.exports=mongoose.model("InventoryMovement", inventoryMovementSchema);
