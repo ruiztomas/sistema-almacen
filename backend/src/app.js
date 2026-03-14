@@ -5,11 +5,22 @@ const salesRoutes=require('./routes/sales.routes');
 const clientsRoutes=require('./routes/clients.routes');
 const expensesRoutes=require('./routes/expenses.routes');
 const authRoutes=require('./routes/auth.routes');
-
-const app=express();
 const path=require('path');
 
-app.use(cors());
+const app=express();
+
+const allowedOrigins=['http://127.0.0.1:5173','http://localhost:5173'];
+app.use(cors({
+    origin:function(origin, callback){
+        if(!origin)return callback(null,true);
+        if(allowedOrigins.includes(origin)){
+            callback(null, true);
+        }else{
+            callback(new Error('No permitido por CORS'));
+        }
+    },
+    credentials: true
+}));
 app.use(express.json());
 app.use('/api/products', productsRoutes);
 app.use('/api/sales', salesRoutes);

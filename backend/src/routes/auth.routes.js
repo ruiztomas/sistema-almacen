@@ -3,8 +3,6 @@ const router=express.Router();
 const jwt=require('jsonwebtoken');
 const User=require('../models/User');
 
-const SECRET='supersecreto';
-
 router.post('/register', async(req,res)=>{
     const user=new User(req.body);
     await user.save();
@@ -22,7 +20,7 @@ router.post('/login',async(req,res)=>{
 
     const token=jwt.sign(
         {id:user._id,role:user.role},
-        'supersecreto',
+        process.env.JWT_SECRET,
         {expiresIn:'8h'}
     );
     res.json({token, role:user.role});

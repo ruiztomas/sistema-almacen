@@ -1,4 +1,3 @@
-// src/components/SidebarLayout.jsx
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -19,7 +18,6 @@ function SidebarLayout() {
   return (
     <div style={{ display: "flex", height: "100vh", fontFamily: "Arial, sans-serif" }}>
       
-      {/* Sidebar */}
       <div
         style={{
           width: collapsed ? "60px" : "200px",
@@ -67,7 +65,10 @@ function SidebarLayout() {
 
         <div style={{ marginTop: "auto", padding: "10px" }}>
           <button
-            onClick={() => navigate("/")}
+            onClick={() => {
+              localStorage.removeItem("token");
+              navigate("/login");
+            }}
             style={{
               width: "100%",
               padding: "8px",
@@ -83,7 +84,6 @@ function SidebarLayout() {
         </div>
       </div>
 
-      {/* Main content */}
       <div style={{ flex: 1, padding: "20px", overflowY: "auto", backgroundColor: "#f5f5f5" }}>
         <Outlet />
       </div>

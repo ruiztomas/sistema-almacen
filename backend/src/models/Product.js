@@ -5,22 +5,39 @@ const productSchema=new mongoose.Schema({
         type: String,
         required: true
     },
-    categoria:String,
-
+    categoria:{
+        type:String,
+        enum:[
+            'varios',
+            'limpieza',
+            'bebidas',
+            'cigarrillos',
+            'otros'
+        ],
+        default:'varios'
+    },
     tipoVenta:{
         type: String,
         enum: ['unidad','peso'],
         required: true
     },
+    precioCosto:{
+        type:Number,
+        required:true
+    },
     precioUnitario: Number,
-    stock: Number,
-
     precioKg: Number,
-    stockKg: Number,
-
+    stock: {
+        type:Number,
+        default:0
+    },
+    stockKg:{
+        type:Number,
+        default:0
+    },
     stockMinimo:{
         type:Number,
-        default: 0
+        default: 3
     },
 
     activo:{

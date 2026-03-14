@@ -4,6 +4,7 @@ const Sale=require('../models/Sale');
 const Product=require('../models/Product');
 const Client=require('../models/Client');
 const Expense=require('../models/Expense');
+const Movement=require('../models/InventoryMovement');
 
 router.post('/', async(req,res,next)=>{
     try{
@@ -18,14 +19,24 @@ router.post('/', async(req,res,next)=>{
                     return res.status(400).json({error:'Stock insuficiente'});
                 }
                 product.stock-=item.cantidad;
-                item.precio=product.precioUnitario;
+                await Movement.create({
+                    producto: product._id,
+                    tipo:"venta",
+                    cantidad:item.cantidad,
+                    precioCosto:product.precioCosto
+                });
             }
             if(product.tipoVenta==='peso'){
                 if(product.stockKg<item.cantidad){
                     return res.status(400).json({error:'Stock insuficiente(kg)'});
                 }
                 product.stockKg-=item.cantidad;
-                item.precio=product.precioKg;
+                await Movement.create({
+                    producto: product._id,
+                    tipo:"venta",
+                    cantidad:item.cantidad,
+                    precioCosto: product.precioCosto
+                });
             }
             item.subtotal=item.cantidad*item.precio;
             total+=item.subtotal;
@@ -43,7 +54,7 @@ router.post('/', async(req,res,next)=>{
         await sale.save();
 
         if(fiado && clienteId){
-            await Cliente.findByIdAndUpdate(clienteId,{
+            await Client.findByIdAndUpdate(clienteId,{
                 $inc:{saldoFiado:total}
             });
         }
@@ -60,7 +71,7 @@ router.get('/daily-summary',async(req,res)=>{
     const fin=new Date();
     fin.setHours(23,59,59,999);
 
-    const ventas=await Sale.Find({
+    const ventas=await Sale.find({
         createdAt:{$gte:inicio, $lte:fin}
     });
     let total=0;
@@ -101,7 +112,7 @@ router.get('/monthly-summary/:year/:month', async(req,res)=>{
     const inicio=new Date(year, month -1, 1);
     const fin=new Date(year, month, 0, 23, 59, 59);
 
-    const ventas=await Expense.find({
+    const ventas=await Sale.find({
         createdAt:{$gte: inicio, $lte: fin}
     });
 
@@ -153,6 +164,30 @@ router.get('/sales/hourly-summary', async (req, res) => {
     ]);
 
     res.json(ventas);
+});
+
+router.get('/real-profit/today', async(req,res)=>{
+    const inicio=new Date();
+    inicio.setHours(0,0,0,0);
+
+    const ventas=await Sale.find({
+        createdAt:{$gte: inicio}
+    });
+    let ingreso=0;
+    let costo=0;
+
+    ventas.forEach(v=>{
+        ingreso+=v.total;
+
+        v.items.forEach(item=>{
+            costo+=item.cantidad*item.precioCosto;
+        });
+    });
+    res.json({
+        ingreso,
+        costo,
+        gananciaReal: ingreso-costo
+    });
 });
 
 module.exports=router;

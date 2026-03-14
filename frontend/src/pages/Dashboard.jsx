@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import api from "../api/axios";
 
 import Expenses from "./Expenses";
@@ -6,74 +6,129 @@ import Clients from "./Clients";
 import Products from "./Products";
 import Sales from "./Sales";
 
-function Dashboard(){
-    const [data, setData]=useState(null);
-    const [loading, setLoading]=useState(true);
-    useEffect(()=>{
-        const fetchDashboard=async()=>{
-            try{
-                const res=await api.get('/dashboard');
-                setData(res.data);
-            }catch(error){
-                console.log(error);
-            }finally{
-                setLoading(false);
-            }
-        };
-        fetchDashboard();
-    },[]);
+function Dashboard() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const scrollRef = useRef(null);
 
-    if(loading){
-        return <p>Cargando dashboard...</p>
-    }
-    return( 
-        <div style={{maxWidth:'1200px', margin:'0 auto', fontFamily:'Arial, sans-serif'}}>
-            <h1 style={{textAlign:'center', marginBottom:'20px'}}>Dashboard del Almacén</h1>
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const res = await api.get("/dashboard");
+        setData(res.data);
+      } catch (error) {
+        console.error(error);
+        if (error.response?.status === 401) {
+          setError("No autorizado. Por favor inicia sesión.");
+        } else {
+          setError("Error al cargar datos del dashboard.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDashboard();
+  }, []);
 
-            <div style={{display:'flex', gap:'20px', marginBottom:'30px', flexWrap:'wrap'}}>
-                <div style={{flex:'1 1 200px', padding:'20px', border:'1px solid #ccc', borderRadius:'8px'}}>
-                    <h3>Total Gastos</h3>
-                    <p>${data.totalExpenses || 0}</p>
-                </div>
-                <div style={{flex:'1 1 200px', padding:'20px', border:'1px solid #ccc', borderRadius:'8px'}}>
-                    <h3>Cantidad de Gastos</h3>
-                    <p>{data.count || 0}</p>
-                </div>
-                <div style={{flex:'1 1 200px', padding:'20px', border:'1px solid #ccc', borderRadius:'8px'}}>
-                    <h3>Total Clientes (Fiados)</h3>
-                    <p>{data.totalClients || 0}</p>
-                </div>
-                <div style={{flex:'1 1 200px', padding:'20px', border:'1px solid #ccc', borderRadius:'8px'}}>
-                    <h3>Total Productos</h3>
-                    <p>{data.totalProducts || 0}</p>
-                </div>
-                <div style={{flex:'1 1 200px', padding:'20px', border:'1px solid #ccc', borderRadius:'8px'}}>
-                    <h3>Ventas Hoy</h3>
-                    <p>${data.totalSalesToday || 0}</p>
-                </div>
-            </div>
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [data]);
 
-            <section style={{marginBottom:'40px'}}>
-                <h2>Gastos</h2>
-                <Expenses />
-            </section>
-
-            <section style={{marginBottom:'40px'}}>
-                <h2>Clientes / Fiados</h2>
-                <Clients /> 
-            </section>
-
-            <section style={{marginBottom:'40px'}}>
-                <h2>Productos</h2>
-                <Products /> 
-            </section>
-
-            <section style={{marginBottom:'40px'}}>
-                <h2>Ventas</h2>
-                <Sales /> 
-            </section>
-        </div>
+  if (loading)
+    return (
+      <p className="text-center mt-10 text-gray-700 dark:text-gray-300">
+        Cargando dashboard...
+      </p>
     );
+  if (error)
+    return (
+      <p className="text-center mt-10 text-red-600 dark:text-red-400">{error}</p>
+    );
+
+  const messages = [
+    { type: "info", text: `Total Gastos: $${data.totalExpenses || 0}` },
+    { type: "info", text: `Cantidad de Gastos: ${data.count || 0}` },
+    { type: "info", text: `Total Clientes (Fiados): ${data.totalClients || 0}` },
+    { type: "info", text: `Total Productos: ${data.totalProducts || 0}` },
+    { type: "info", text: `Ventas Hoy: $${data.totalSalesToday || 0}` },
+  ];
+
+  const fadeInStyle = {
+    animation: "fadeIn 0.3s ease-out",
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900 p-4 max-w-6xl mx-auto font-sans">
+      <h1 className="text-center text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">
+        Sistema de Almacén
+      </h1>
+
+      <div className="flex-1 overflow-y-auto mb-6 space-y-3">
+        {messages.map((msg, idx) => (
+          <div
+            key={idx}
+            className="max-w-md p-4 rounded-xl shadow-md bg-white dark:bg-gray-800 dark:text-white"
+            style={fadeInStyle}
+          >
+            {msg.text}
+          </div>
+        ))}
+
+        <div className="space-y-4 mt-4">
+          <div
+            className="max-w-md p-4 rounded-xl shadow-md bg-blue-50 dark:bg-blue-900"
+            style={fadeInStyle}
+          >
+            <h2 className="font-semibold mb-2 text-gray-800 dark:text-gray-200">
+              Gastos
+            </h2>
+            <Expenses />
+          </div>
+
+          <div
+            className="max-w-md p-4 rounded-xl shadow-md bg-green-50 dark:bg-green-900"
+            style={fadeInStyle}
+          >
+            <h2 className="font-semibold mb-2 text-gray-800 dark:text-gray-200">
+              Clientes / Fiados
+            </h2>
+            <Clients />
+          </div>
+
+          <div
+            className="max-w-md p-4 rounded-xl shadow-md bg-yellow-50 dark:bg-yellow-900"
+            style={fadeInStyle}
+          >
+            <h2 className="font-semibold mb-2 text-gray-800 dark:text-gray-200">
+              Productos
+            </h2>
+            <Products />
+          </div>
+
+          <div
+            className="max-w-md p-4 rounded-xl shadow-md bg-purple-50 dark:bg-purple-900"
+            style={fadeInStyle}
+          >
+            <h2 className="font-semibold mb-2 text-gray-800 dark:text-gray-200">
+              Ventas
+            </h2>
+            <Sales />
+          </div>
+        </div>
+        <div ref={scrollRef}></div>
+      </div>
+
+      <style>
+        {`
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}
+      </style>
+    </div>
+  );
 }
 
 export default Dashboard;

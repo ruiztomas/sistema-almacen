@@ -13,7 +13,7 @@ function Expenses(){
     const [editingId,setEditingId]=useState(null);
     const [filterCategoria, setFilterCategoria]=useState('');
     const [filterDesde, setFilterDesde]=useState('');
-    const [filterHasta,setFilerHasta]=useState('');
+    const [filterHasta,setFilterHasta]=useState('');
     const [page, setPage]=useState(1);
     const [totalPages, setTotalPages]=useState(1);
 
@@ -152,7 +152,7 @@ function Expenses(){
                     <option value="">Seleccionar categoria</option>
                     <option value="Varios">Varios</option>
                     <option value="Limpieza">Limpieza</option>
-                    <option value="Bebidads">Bebidas</option>
+                    <option value="Bebidas">Bebidas</option>
                     <option value="Cigarrillos">Cigarrillos</option>
                     <option value="Otros">Otros</option>
                 </select>
@@ -223,7 +223,7 @@ function Expenses(){
                 <input 
                     type="date"
                     value={filterHasta}
-                    onChange={(e)=>setFilerHasta(e.target.value)}
+                    onChange={(e)=>setFilterHasta(e.target.value)}
                 />
             </div>
 
@@ -238,7 +238,7 @@ function Expenses(){
                         <Tooltip formatter={(value)=>formatCurrency(value)} />
                         <Bar dataKey="total">
                             {categoryData.map((entry, index)=>{
-                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                return <Cell key={`cell-${index}`} fill={entry.color} />
                             })}
                         </Bar>
                     </BarChart>

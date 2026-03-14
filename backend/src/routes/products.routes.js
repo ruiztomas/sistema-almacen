@@ -1,6 +1,7 @@
 const express=require('express');
 const router=express.Router();
 const Product=require('../models/Product');
+const InventoryMovement = require('../models/InventoryMovement');
 
 router.post('/', async(req,res,next)=>{
     try{
@@ -40,6 +41,50 @@ router.put('/:id', async(req, res)=>{
 router.delete('/:id', async(req, res)=>{
     await Product.findByIdAndUpdate(req.params.id, {activo: false});
     res.json({message: 'Producto desactivado'});
+});
+
+router.get('/inventory-value',async(res,res)=>{
+    const products=await Product.find({activo:true});
+    let total=0;
+    products.forEach(p=>{
+        if(p.tipoVenta==='unidad'){
+            total+=p.stock*p.precioCosto;
+        }
+        if(p.tipoVenta==='peso'){
+            total+=p.stockKg*p.precioCosto;
+        }
+    });
+    res.json({
+        dineroInvertido:total
+    });
+});
+
+router.get('/category/:cat',async(req,res)=>{
+    const products=await Product.find({
+        categoria:req.params.cat,
+        activo:true
+    });
+    res.json(products);
+});
+
+router.post('/:id/restock',async(req,res)=>{
+    const {cantidad}=req.body;
+    const product=await Product.findById(req.params.id);
+    if(product.tipoVenta==='unidad'){
+        product.stock+=cantidad;
+    }
+    if(product.tipoVenta==="peso"){
+        product.stockKg+=cantidad;
+    }
+    await product.save();
+
+    await Movement.create({
+        producto: product._id,
+        tipo:"entrada",
+        cantidad,
+        precioCosto: product.precioCosto
+    });
+    res.json(product);
 });
 
 module.exports=router;
