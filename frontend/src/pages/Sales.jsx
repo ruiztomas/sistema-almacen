@@ -1,66 +1,181 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef} from "react";
 import api from "../api/axios";
 
 function Sales() {
-    const [sales, setSales] = useState([]);
-    const [product, setProduct] = useState("");
-    const [quantity, setQuantity] = useState("");
-    const [total, setTotal] = useState("");
 
-    const fetchSales = async () => {
-        try {
-            const res = await api.get("/sales");
-            setSales(res.data || []);
-        } catch (error) {
-            console.log(error);
+const [products,setProducts]=useState([]);
+const [query,setQuery]=useState("");
+const [cart,setCart]=useState([]);
+
+const inputRef=useRef(null);
+
+useEffect(()=>{
+    const fetchProducts=async()=>{
+        const res=await api.get("/products");
+        setProducts(res.data || []);
+    };
+    fetchProducts();
+},[]);
+
+useEffect(()=>{
+    inputRef.current?.focus();
+}, []);
+
+// 🔎 BUSCAR PRODUCTOS
+const filtered=products.filter(p=>
+    p.nombre.toLowerCase().includes(query.toLowerCase()) ||
+    p.barcode?.includes(query)
+);
+
+useEffect(() => {
+    const handleKeyDown=(e)=>{
+        // ENTER → agrega el primer producto encontrado
+        if (e.key==="Enter"){
+            e.preventDefault();
+            if (filtered.length>0){
+                addProduct(filtered[0]);
+            }
+        }
+        // F2 → registrar venta
+        if(e.key==="F2"){
+            e.preventDefault();
+            sell();
+        }
+        // DELETE → eliminar último producto
+        if(e.key==="Delete"){
+            setCart(prev => prev.slice(0, -1));
+        }
+        // ESC → cancelar venta
+        if(e.key==="Escape"){
+            setCart([]);
+            setQuery("");
         }
     };
-
-    useEffect(() => {
-        fetchSales();
-    }, []);
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            await api.post("/sales", { product, quantity: Number(quantity), total: Number(total) });
-            setProduct(""); setQuantity(""); setTotal("");
-            fetchSales();
-        } catch (error) {
-            console.log(error);
-        }
+    window.addEventListener("keydown", handleKeyDown);
+    return()=>{
+        window.removeEventListener("keydown", handleKeyDown);
     };
+}, [filtered]);
 
-    return (
-        <div>
-            <form onSubmit={handleSubmit} style={{ display: "flex", gap: "10px", marginBottom: "20px", flexWrap:"wrap" }}>
-                <input placeholder="Producto" value={product} onChange={e => setProduct(e.target.value)} required />
-                <input type="number" placeholder="Cantidad" value={quantity} onChange={e => setQuantity(e.target.value)} required />
-                <input type="number" placeholder="Total" value={total} onChange={e => setTotal(e.target.value)} required />
-                <button type="submit">Agregar Venta</button>
-            </form>
+// 🛒 AGREGAR AL CARRITO
+const addProduct=(product)=>{
+    const existing=cart.find(p=>p._id===product._id);
+    if(existing){
+        setCart(cart.map(p=>
+            p._id===product._id ? {...p,cantidad:p.cantidad+1} : p
+        ));
+    }else{
+        setCart([
+            ...cart,
+            {...product,cantidad:1}
+        ]);
+    }
+};
 
-            <table border="1" style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead>
-                    <tr>
-                        <th>Producto</th>
-                        <th>Cantidad</th>
-                        <th>Total</th>
-                        <th>Fecha</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {sales.map(s => (
-                        <tr key={s._id}>
-                            <td>{s.product}</td>
-                            <td>{s.quantity}</td>
-                            <td>${s.total}</td>
-                            <td>{new Date(s.date).toLocaleString()}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+// ❌ ELIMINAR DEL CARRITO
+const removeProduct=(id)=>{
+    setCart(cart.filter(p=>p._id!==id));
+};
+
+// 💰 TOTAL
+const total=cart.reduce(
+    (acc,item)=>acc+(item.precioUnitario*item.cantidad),
+    0
+);
+
+// 📡 ENVIAR VENTA
+const sell=async()=>{
+    if(cart.length===0) return;
+    try{
+        const items=cart.map(p=>({
+            producto:p._id,
+            cantidad:p.cantidad
+        }));
+        await api.post("/sales",{
+            items
+        });
+        setCart([]);
+        setQuery("");
+        alert("Venta registrada");
+    }catch(error){
+        console.log(error);
+        alert("Error al registrar venta");
+    }
+};
+return(
+    <div style={{display:"flex",gap:"20px",flexWrap:"wrap"}}>
+    {/* BUSCADOR */}
+    <div style={{flex:"1"}}>
+        <h3>Buscar producto</h3>
+            <input
+                ref={inputRef}
+                type="text"
+                placeholder="Buscar producto..."
+                value={query}
+                onChange={(e)=>setQuery(e.target.value)}
+                style={{width:"100%",padding:"8px",marginBottom:"10px"}}
+            />
+            <ul style={{maxHeight:"300px",overflowY:"auto"}}>
+                {filtered.map(product=>(
+                    <li
+                        key={product._id}
+                        onClick={()=>addProduct(product)}
+                        style={{
+                            cursor:"pointer",
+                            padding:"8px",
+                            borderBottom:"1px solid #ddd"
+                        }}
+                    >
+                        {product.nombre} — ${product.precioUnitario}
+                    </li>
+                ))}
+
+            </ul>
+    </div>
+    {/* CARRITO */}
+    <div style={{flex:"1"}}>
+        <h3>Carrito</h3>
+            {cart.length===0 && <p>No hay productos</p>}
+            {cart.map(item=>(
+                <div
+                    key={item._id}
+                    style={{
+                        display:"flex",
+                        justifyContent:"space-between",
+                        marginBottom:"6px"
+                    }}
+                >
+                    <span>
+                        {item.nombre} x{item.cantidad}
+                    </span>
+                    <span>
+                        ${item.precioUnitario*item.cantidad}
+                        <button
+                            onClick={()=>removeProduct(item._id)}
+                            style={{marginLeft:"10px"}}
+                        >
+                            ❌
+                        </button>
+                    </span>
+                </div>
+            ))}
+        <hr/>
+        <h3>Total: ${total}</h3>
+            <button
+                onClick={sell}
+                style={{
+                    marginTop:"10px",
+                    padding:"10px",
+                    width:"100%",
+                    background:"green",
+                    color:"white",
+                    border:"none"
+                }}
+            >
+                Registrar Venta
+            </button>
         </div>
+    </div>
     );
 }
 

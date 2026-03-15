@@ -5,6 +5,11 @@ const productSchema=new mongoose.Schema({
         type: String,
         required: true
     },
+    barcode:{
+        type:String,
+        unique:true,
+        sparse:true
+    },
     categoria:{
         type:String,
         enum:[

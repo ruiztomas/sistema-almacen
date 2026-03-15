@@ -40,6 +40,13 @@ router.get('/',auth,async(req,res, next)=>{
             .limit(5);
         
         //Ventas del dia
+        const hoy=new Date();
+        const inicio=new Date(hoy);
+        inicio.setHours(0,0,0,0);
+
+        const fin=new Date(hoy);
+        fin.setHours(23,59,59,999);
+
         const ventasHoy=await Sale.find({
             createdAt:{$gte:inicio, $lte:fin}
         });
@@ -53,10 +60,10 @@ router.get('/',auth,async(req,res, next)=>{
                 costoProducto+=item.cantidad*(item.precioCosto || 0);
             });
         });
-        const gananciaHoy=totalVentas-costoProductos;
+        const gananciaHoy=totalVentas-costoProducto;
 
         //Inventario
-        const products=await Product.fin({activo:true});
+        const products=await Product.find({activo:true});
 
         let valorInventario=0;
         let productosStockBajo=0;

@@ -47,11 +47,12 @@ function Dashboard() {
     );
 
   const messages = [
-    { type: "info", text: `Total Gastos: $${data.totalExpenses || 0}` },
-    { type: "info", text: `Cantidad de Gastos: ${data.count || 0}` },
-    { type: "info", text: `Total Clientes (Fiados): ${data.totalClients || 0}` },
-    { type: "info", text: `Total Productos: ${data.totalProducts || 0}` },
-    { type: "info", text: `Ventas Hoy: $${data.totalSalesToday || 0}` },
+    { type: "info", text: `Ventas hoy: $${data.ventasHoy || 0}` },
+    { type: "info", text: `Ganancia hoy: ${data.gananciaHoy || 0}` },
+    { type: "info", text: `Valor base de inventario: ${data.valorInventario || 0}` },
+    { type: "warning", text: `Productos con stock bajo: ${data.productosStockBajo || 0}` },
+    { type: "warning", text: `Dinero necesario para reposicion(Aprox.): $${data.dineroReposicion || 0}` },
+    { type: "info", text: `Gastos totales: $${data.gastosTotales || 0}` },
   ];
 
   const fadeInStyle = {
@@ -61,7 +62,7 @@ function Dashboard() {
   return (
     <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900 p-4 max-w-6xl mx-auto font-sans">
       <h1 className="text-center text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">
-        Sistema de Almacén
+        Sistema de Gestion
       </h1>
 
       <div className="flex-1 overflow-y-auto mb-6 space-y-3">
@@ -75,17 +76,33 @@ function Dashboard() {
           </div>
         ))}
 
+        {data.topProductos && data.topProductos.length>0 &&(
+          <div
+            className="max-w-md p-4 rounded-x1 shadow-md bg-orange-50 dark:bg-orange-900"
+            style={fadeInStyle}
+          >
+            <h2 className="font-semibold mb-2 text-gray-800 dark:text-gray-200">
+              Productos mas vendidos hoy
+            </h2>
+            <ul className="space-y-1">
+              {data.topProductos.map((p,i)=>(
+                <li key={i}>
+                  Producto {p[0]}-{p[1]} vendidos
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         <div className="space-y-4 mt-4">
           <div
-            className="max-w-md p-4 rounded-xl shadow-md bg-blue-50 dark:bg-blue-900"
+            className="max-w-md p-4 rounded-xl shadows-md bg-blue-50 dark:bg-blue-900"
             style={fadeInStyle}
           >
             <h2 className="font-semibold mb-2 text-gray-800 dark:text-gray-200">
               Gastos
             </h2>
-            <Expenses />
+            <Expenses/>
           </div>
-
           <div
             className="max-w-md p-4 rounded-xl shadow-md bg-green-50 dark:bg-green-900"
             style={fadeInStyle}
@@ -93,9 +110,8 @@ function Dashboard() {
             <h2 className="font-semibold mb-2 text-gray-800 dark:text-gray-200">
               Clientes / Fiados
             </h2>
-            <Clients />
+            <Clients/>
           </div>
-
           <div
             className="max-w-md p-4 rounded-xl shadow-md bg-yellow-50 dark:bg-yellow-900"
             style={fadeInStyle}
@@ -103,9 +119,8 @@ function Dashboard() {
             <h2 className="font-semibold mb-2 text-gray-800 dark:text-gray-200">
               Productos
             </h2>
-            <Products />
+            <Products/>
           </div>
-
           <div
             className="max-w-md p-4 rounded-xl shadow-md bg-purple-50 dark:bg-purple-900"
             style={fadeInStyle}
@@ -113,17 +128,16 @@ function Dashboard() {
             <h2 className="font-semibold mb-2 text-gray-800 dark:text-gray-200">
               Ventas
             </h2>
-            <Sales />
+            <Sales/>
           </div>
         </div>
         <div ref={scrollRef}></div>
       </div>
-
       <style>
         {`
           @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity:0; transform:translateY(10px); }
+            to { opacity:1; transform:translateY(0); }
           }
         `}
       </style>

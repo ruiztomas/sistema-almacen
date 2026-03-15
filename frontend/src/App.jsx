@@ -6,7 +6,7 @@ import Clients from './pages/Clients.jsx';
 import Products from './pages/Products.jsx';
 import Sales from './pages/Sales.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
-import SidebarLayout from './components/SidebarLayout.jsx'; // Este será tu menú lateral
+import SidebarLayout from './components/SidebarLayout.jsx'; 
 
 function App() {
   return (
