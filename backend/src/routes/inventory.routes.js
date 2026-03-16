@@ -13,6 +13,24 @@ router.get('/movements',async(req,res)=>{
     res.json(movements);
 });
 
+//historial general
+router.get("/movements",async(req,res)=>{
+    const movements=await Movement
+        .find()
+        .populate("producto")
+        .sort({createdAt:-1})
+        .limit(100);
+    res.json(movements);
+});
+
+//movimiento de un producto
+router.get("/movements/:productId", async(req,res)=>{
+    const movements=await Movement
+        .find({producto:req.params.productId})
+        .sort({createdAt:-1});
+    res.json(movements);
+});
+
 //Historial de producto
 router.get('/movements/:productId', async(req,res)=>{
     const movements=await Movement.find({

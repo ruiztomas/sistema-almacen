@@ -13,6 +13,7 @@ function SidebarLayout() {
     { name: "Clientes", path: "/clients" },
     { name: "Productos", path: "/products" },
     { name: "Ventas", path: "/sales" },
+    { name:"Caja", path:"/cash" },
   ];
 
   return (

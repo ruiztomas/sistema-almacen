@@ -6,6 +6,7 @@ const expensesRoutes=require('./routes/expenses.routes');
 const dashboardRoutes=require('./routes/dashboard.routes');
 const authRoutes=require('./routes/auth.routes');
 const inventoryRoutes=require('./routes/inventory.routes');
+const cashRoutes=require("./routes/cash.routes")
 const errorHandler=require('./middleware/error.middleware');
 
 const helmet=require("helmet");
@@ -29,6 +30,7 @@ app.use('/api/expenses', expensesRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/inventory', inventoryRoutes);
+app.use("/api/cash", cashRoutes);
 app.use('/uploads',require('express').static('uploads'));
 app.use(errorHandler);
 app.listen(PORT,'0.0.0.0',()=>{

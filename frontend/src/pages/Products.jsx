@@ -55,7 +55,7 @@ function Products() {
     };
 
     return (
-        <div>
+        <div style={{display:"flex", flexWrap:"wrap", gap:"10px"}}>
             <form onSubmit={handleSubmit} style={{ display: "flex", gap: "10px", marginBottom: "20px", flexWrap:"wrap" }}>
                 <input placeholder="Nombre" value={name} onChange={e => setName(e.target.value)} required />
                 <input type="number" placeholder="Precio" value={price} onChange={e => setPrice(e.target.value)} required />

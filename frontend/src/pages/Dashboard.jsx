@@ -60,7 +60,7 @@ function Dashboard() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900 p-4 max-w-6xl mx-auto font-sans">
+    <div style={{display:"flex", flexWrap:"wrap", gap:"20px"}}>
       <h1 className="text-center text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">
         Sistema de Gestion
       </h1>
