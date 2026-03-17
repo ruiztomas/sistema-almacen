@@ -9,11 +9,13 @@ function SidebarLayout() {
 
   const menuItems = [
     { name: "Dashboard", path: "/dashboard" },
+    { name: "Ventas", path: "/sales" },
+    { name: "Productos", path: "/products" },    
+    { name:"Caja", path:"/cash" },
     { name: "Gastos", path: "/expenses" },
     { name: "Clientes", path: "/clients" },
-    { name: "Productos", path: "/products" },
-    { name: "Ventas", path: "/sales" },
-    { name:"Caja", path:"/cash" },
+    { name:"Proveedores", path:"/suppliers" },
+    { name:"Inventario", path:"/inventory"},
   ];
 
   return (

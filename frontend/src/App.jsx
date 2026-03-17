@@ -6,6 +6,8 @@ import Clients from './pages/Clients.jsx';
 import Products from './pages/Products.jsx';
 import Sales from './pages/Sales.jsx';
 import Cash from "./pages/Cash.jsx";
+import Suppliers from './pages/Suppliers.jsx';
+import Inventory from './pages/Inventory.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import SidebarLayout from './components/SidebarLayout.jsx';
 
@@ -24,12 +26,14 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<Navigate to="/dashboard" />} />
+          <Route index element={<Navigate to="dashboard" />} />
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="/cash" element={<Cash />} />
+          <Route path="cash" element={<Cash />} />
           <Route path="expenses" element={<Expenses />} />
           <Route path="clients" element={<Clients />} />
           <Route path="products" element={<Products />} />
+          <Route path="suppliers" element={<Suppliers />} />
+          <Route path="inventory" element={<Inventory />} />
           <Route path="sales" element={<Sales />} />
         </Route>
 

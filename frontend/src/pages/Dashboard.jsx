@@ -7,6 +7,7 @@ import Products from "./Products";
 import Sales from "./Sales";
 
 function Dashboard() {
+
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -28,6 +29,7 @@ function Dashboard() {
         setLoading(false);
       }
     };
+
     fetchDashboard();
   }, []);
 
@@ -35,112 +37,173 @@ function Dashboard() {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [data]);
 
-  if (loading)
+  if (loading) {
     return (
-      <p className="text-center mt-10 text-gray-700 dark:text-gray-300">
+      <p style={{ textAlign: "center", marginTop: "40px" }}>
         Cargando dashboard...
       </p>
     );
-  if (error)
-    return (
-      <p className="text-center mt-10 text-red-600 dark:text-red-400">{error}</p>
-    );
+  }
 
-  const messages = [
-    { type: "info", text: `Ventas hoy: $${data.ventasHoy || 0}` },
-    { type: "info", text: `Ganancia hoy: ${data.gananciaHoy || 0}` },
-    { type: "info", text: `Valor base de inventario: ${data.valorInventario || 0}` },
-    { type: "warning", text: `Productos con stock bajo: ${data.productosStockBajo || 0}` },
-    { type: "warning", text: `Dinero necesario para reposicion(Aprox.): $${data.dineroReposicion || 0}` },
-    { type: "info", text: `Gastos totales: $${data.gastosTotales || 0}` },
+  if (error) {
+    return (
+      <p style={{ textAlign: "center", marginTop: "40px", color: "red" }}>
+        {error}
+      </p>
+    );
+  }
+
+  const cards = [
+    { title: "Ventas hoy", value: `$${data.ventasHoy || 0}` },
+    { title: "Ganancia hoy", value: `$${data.gananciaHoy || 0}` },
+    { title: "Valor inventario", value: `$${data.valorInventario || 0}` },
+    { title: "Stock bajo", value: data.productosStockBajo || 0 },
+    { title: "Reposición necesaria", value: `$${data.dineroReposicion || 0}` },
+    { title: "Gastos totales", value: `$${data.gastosTotales || 0}` },
   ];
 
-  const fadeInStyle = {
-    animation: "fadeIn 0.3s ease-out",
+  const cardStyle = {
+    flex: "1 1 200px",
+    background: "#1e293b",
+    color: "white",
+    padding: "20px",
+    borderRadius: "10px",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+  };
+
+  const panelStyle = {
+    flex: 1,
+    background: "white",
+    padding: "20px",
+    borderRadius: "10px",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+  };
+
+  const btn = {
+    display: "block",
+    width: "100%",
+    padding: "12px",
+    marginTop: "10px",
+    border: "none",
+    borderRadius: "6px",
+    background: "#2563eb",
+    color: "white",
+    cursor: "pointer",
   };
 
   return (
-    <div style={{display:"flex", flexWrap:"wrap", gap:"20px"}}>
-      <h1 className="text-center text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">
-        Sistema de Gestion
+    <div style={{ padding: "20px" }}>
+
+      <h1 style={{ marginBottom: "30px" }}>
+        Sistema de Gestión
       </h1>
 
-      <div className="flex-1 overflow-y-auto mb-6 space-y-3">
-        {messages.map((msg, idx) => (
-          <div
-            key={idx}
-            className="max-w-md p-4 rounded-xl shadow-md bg-white dark:bg-gray-800 dark:text-white"
-            style={fadeInStyle}
-          >
-            {msg.text}
+      {/* TARJETAS DE ESTADISTICAS */}
+
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "20px",
+          marginBottom: "30px",
+        }}
+      >
+        {cards.map((card, i) => (
+          <div key={i} style={cardStyle}>
+            <h3>{card.title}</h3>
+            <p style={{ fontSize: "22px", fontWeight: "bold" }}>
+              {card.value}
+            </p>
           </div>
         ))}
-
-        {data.topProductos && data.topProductos.length>0 &&(
-          <div
-            className="max-w-md p-4 rounded-x1 shadow-md bg-orange-50 dark:bg-orange-900"
-            style={fadeInStyle}
-          >
-            <h2 className="font-semibold mb-2 text-gray-800 dark:text-gray-200">
-              Productos mas vendidos hoy
-            </h2>
-            <ul className="space-y-1">
-              {data.topProductos.map((p,i)=>(
-                <li key={i}>
-                  Producto {p[0]}-{p[1]} vendidos
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        <div className="space-y-4 mt-4">
-          <div
-            className="max-w-md p-4 rounded-xl shadows-md bg-blue-50 dark:bg-blue-900"
-            style={fadeInStyle}
-          >
-            <h2 className="font-semibold mb-2 text-gray-800 dark:text-gray-200">
-              Gastos
-            </h2>
-            <Expenses/>
-          </div>
-          <div
-            className="max-w-md p-4 rounded-xl shadow-md bg-green-50 dark:bg-green-900"
-            style={fadeInStyle}
-          >
-            <h2 className="font-semibold mb-2 text-gray-800 dark:text-gray-200">
-              Clientes / Fiados
-            </h2>
-            <Clients/>
-          </div>
-          <div
-            className="max-w-md p-4 rounded-xl shadow-md bg-yellow-50 dark:bg-yellow-900"
-            style={fadeInStyle}
-          >
-            <h2 className="font-semibold mb-2 text-gray-800 dark:text-gray-200">
-              Productos
-            </h2>
-            <Products/>
-          </div>
-          <div
-            className="max-w-md p-4 rounded-xl shadow-md bg-purple-50 dark:bg-purple-900"
-            style={fadeInStyle}
-          >
-            <h2 className="font-semibold mb-2 text-gray-800 dark:text-gray-200">
-              Ventas
-            </h2>
-            <Sales/>
-          </div>
-        </div>
-        <div ref={scrollRef}></div>
       </div>
-      <style>
-        {`
-          @keyframes fadeIn {
-            from { opacity:0; transform:translateY(10px); }
-            to { opacity:1; transform:translateY(0); }
-          }
-        `}
-      </style>
+
+      {/* ACCIONES RAPIDAS + ALERTAS */}
+
+      <div
+        style={{
+          display: "flex",
+          gap: "20px",
+          flexWrap: "wrap",
+          marginBottom: "30px",
+        }}
+      >
+
+        <div style={panelStyle}>
+          <h3>Acciones rápidas</h3>
+
+          <button style={btn}>Nueva venta</button>
+          <button style={btn}>Gestionar inventario</button>
+          <button style={btn}>Ver reportes</button>
+        </div>
+
+        <div style={panelStyle}>
+          <h3>Alertas del sistema</h3>
+
+          <p>Ventas hoy: ${data.ventasHoy}</p>
+
+          <p>
+            Productos con stock bajo: {data.productosStockBajo}
+          </p>
+
+          {data.productosStockBajo === 0 && (
+            <p style={{ color: "green" }}>
+              ✔ Todo en orden
+            </p>
+          )}
+
+          {data.topProductos && data.topProductos.length > 0 && (
+            <>
+              <h4 style={{ marginTop: "10px" }}>
+                Productos más vendidos hoy
+              </h4>
+
+              <ul>
+                {data.topProductos.map((p, i) => (
+                  <li key={i}>
+                    Producto {p[0]} - {p[1]} vendidos
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* MODULOS DEL SISTEMA */}
+
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "20px",
+        }}
+      >
+
+        <div style={panelStyle}>
+          <h2>Gastos</h2>
+          <Expenses />
+        </div>
+
+        <div style={panelStyle}>
+          <h2>Clientes / Fiados</h2>
+          <Clients />
+        </div>
+
+        <div style={panelStyle}>
+          <h2>Productos</h2>
+          <Products />
+        </div>
+
+        <div style={panelStyle}>
+          <h2>Ventas</h2>
+          <Sales />
+        </div>
+
+      </div>
+
+      <div ref={scrollRef}></div>
+
     </div>
   );
 }

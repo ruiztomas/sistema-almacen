@@ -25,4 +25,4 @@ const cashRegisterSchema=new mongoose.Schema({
     closedAt: Date
 });
 
-module.exports=mongoose.model("")
+module.exports=mongoose.model("CashRegister", cashRegisterSchema);

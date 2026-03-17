@@ -2,8 +2,6 @@ const express=require("express");
 const CashRegister = require("../models/CashRegister");
 const router=express.Router();
 
-const CashRegister=require("../models/CashRegister");
-
 //abrir caja
 router.post("/open", async(req,res)=>{
     const {montoInicial}=req.body;
