@@ -6,60 +6,75 @@ const Client=require('../models/Client');
 const Expense=require('../models/Expense');
 const Movement=require('../models/InventoryMovement');
 
-router.post('/', async(req,res,next)=>{
-    try{
-        const {items, clienteId, fiado, pago}=req.body;
-        let total=0;
-
-        for (const item of items){
-            const product=await Product.findById(item.producto);
-
-            if(product.tipoVenta==='unidad'){
-                if(product.stock<item.cantidad){
-                    return res.status(400).json({error:'Stock insuficiente'});
+router.post('/', async (req, res, next) => {
+    try {
+        const { items, clienteId, fiado, pago, metodoPago } = req.body;
+        // 🔐 1. VERIFICAR CAJA ABIERTA
+        const caja = await CashRegister.findOne({ abierta: true });
+        if (!caja){
+            return res.status(400).json({
+                error: "No hay caja abierta"
+            });
+        }
+        let total = 0;
+        for (const item of items) {
+            const product = await Product.findById(item.producto);
+            if (!product) continue;
+            // 📦 CONTROL STOCK
+            if (product.tipoVenta === 'unidad') {
+                if (product.stock < item.cantidad) {
+                    return res.status(400).json({ error: 'Stock insuficiente' });
                 }
-                product.stock-=item.cantidad;
+                product.stock -= item.cantidad;
                 await Movement.create({
                     producto: product._id,
-                    tipo:"venta",
-                    cantidad:item.cantidad,
-                    precioCosto:product.precioCosto
-                });
-            }
-            if(product.tipoVenta==='peso'){
-                if(product.stockKg<item.cantidad){
-                    return res.status(400).json({error:'Stock insuficiente(kg)'});
-                }
-                product.stockKg-=item.cantidad;
-                await Movement.create({
-                    producto: product._id,
-                    tipo:"venta",
-                    cantidad:item.cantidad,
+                    tipo: "venta",
+                    cantidad: item.cantidad,
                     precioCosto: product.precioCosto
                 });
             }
-            item.subtotal=item.cantidad*item.precio;
-            total+=item.subtotal;
-
+            if (product.tipoVenta === 'peso') {
+                if (product.stockKg < item.cantidad) {
+                    return res.status(400).json({ error: 'Stock insuficiente (kg)' });
+                }
+                product.stockKg -= item.cantidad;
+                await Movement.create({
+                    producto: product._id,
+                    tipo: "venta",
+                    cantidad: item.cantidad,
+                    precioCosto: product.precioCosto
+                });
+            }
+            item.subtotal = item.cantidad * item.precio;
+            total += item.subtotal;
             await product.save();
         }
-        const sale=new Sale({
+        // 💾 CREAR VENTA
+        const sale = new Sale({
             cliente: clienteId || null,
             items,
             total,
             fiado,
-            estado: fiado?'pendiente':'pagada',
-            pago
+            estado: fiado ? 'pendiente' : 'pagada',
+            pago,
+            metodoPago: metodoPago || "efectivo"
         });
         await sale.save();
-
-        if(fiado && clienteId){
-            await Client.findByIdAndUpdate(clienteId,{
-                $inc:{saldoFiado:total}
+        // 💰 ACTUALIZAR CAJA
+        if (sale.metodoPago === "efectivo") {
+            caja.ventasEfectivo += total;
+        } else {
+            caja.ventasTransferencia += total;
+        }
+        await caja.save();
+        // 🧾 FIADO
+        if (fiado && clienteId) {
+            await Client.findByIdAndUpdate(clienteId, {
+                $inc: { saldoFiado: total }
             });
         }
         res.status(201).json(sale);
-    }catch(error){
+    } catch (error) {
         next(error);
     }
 });

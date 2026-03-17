@@ -6,6 +6,7 @@ function Sales() {
 const [products,setProducts]=useState([]);
 const [query,setQuery]=useState("");
 const [cart,setCart]=useState([]);
+const [metodoPago,setMetodoPago]=useState("efectivo");
 
 const inputRef=useRef(null);
 
@@ -92,7 +93,8 @@ const sell=async()=>{
             cantidad:p.cantidad
         }));
         await api.post("/sales",{
-            items
+            items,
+            metodoPago
         });
         setCart([]);
         setQuery("");
@@ -161,6 +163,10 @@ return(
             ))}
         <hr/>
         <h3>Total: ${total}</h3>
+            <select value={metodoPago} onChange={(e)=>setMetodoPago(e.target.value)} style={{width:"100%", padding:"8px", marginTop:"10px"}}>
+                <option value="efectivo">Efectivo</option>
+                <option value="transferencia">Transferencia</option>
+            </select>
             <button
                 onClick={sell}
                 style={{

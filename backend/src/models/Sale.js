@@ -5,7 +5,6 @@ const saleSchema=new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref:'Client'
     },
-
     items:[
         {
             producto:{
@@ -20,18 +19,20 @@ const saleSchema=new mongoose.Schema({
         }
     ],
     total: Number,
-
     fiado:{
         type: Boolean,
         default: false
     },
-
     estado:{
         type: String,
         enum: ['pendiente', 'pagada'],
         default: 'pagada'
     },
-
+    metodoPago:{
+        type: String,
+        enum: ["efectivo", "transferencia"],
+        default: "efectivo"
+    },
     pago: String
 }, {timestamps: true});
 

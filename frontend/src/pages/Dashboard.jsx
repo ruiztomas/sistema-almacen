@@ -1,13 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
-
-import Expenses from "./Expenses";
-import Clients from "./Clients";
-import Products from "./Products";
-import Sales from "./Sales";
 
 function Dashboard() {
 
+  const navigate=useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -132,9 +129,8 @@ function Dashboard() {
         <div style={panelStyle}>
           <h3>Acciones rápidas</h3>
 
-          <button style={btn}>Nueva venta</button>
-          <button style={btn}>Gestionar inventario</button>
-          <button style={btn}>Ver reportes</button>
+          <button style={btn} onClick={()=>navigate("/sales")}>Nueva venta</button>
+          <button style={btn} onClick={()=>navigate("/products")}>Gestionar inventario</button>
         </div>
 
         <div style={panelStyle}>
@@ -149,6 +145,12 @@ function Dashboard() {
           {data.productosStockBajo === 0 && (
             <p style={{ color: "green" }}>
               ✔ Todo en orden
+            </p>
+          )}
+
+          {data.diferenciaCaja !== 0 && (
+            <p style={{color:"red"}}>
+              ⚠ Diferencia en caja: ${data.diferenciaCaja}
             </p>
           )}
 
@@ -169,41 +171,7 @@ function Dashboard() {
           )}
         </div>
       </div>
-
-      {/* MODULOS DEL SISTEMA */}
-
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "20px",
-        }}
-      >
-
-        <div style={panelStyle}>
-          <h2>Gastos</h2>
-          <Expenses />
-        </div>
-
-        <div style={panelStyle}>
-          <h2>Clientes / Fiados</h2>
-          <Clients />
-        </div>
-
-        <div style={panelStyle}>
-          <h2>Productos</h2>
-          <Products />
-        </div>
-
-        <div style={panelStyle}>
-          <h2>Ventas</h2>
-          <Sales />
-        </div>
-
-      </div>
-
       <div ref={scrollRef}></div>
-
     </div>
   );
 }

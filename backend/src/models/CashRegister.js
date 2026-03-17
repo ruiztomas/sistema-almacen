@@ -9,15 +9,30 @@ const cashRegisterSchema=new mongoose.Schema({
         required: true
     },
     montoFinal: Number,
+    montoEsperado:{
+        type: Number,
+        default: 0
+    },
     ventasEfectivo:{
         type:Number,
         default:0
+    },
+    ventasTransferencia:{
+        type: Number,
+        default: 0
     },
     gastos:{
         type: Number,
         default:0
     },
-    diferencia: Number,
+    diferencia: {
+        type:Number,
+        default:0
+    },
+    cerrada: {
+        type: Boolean,
+        default: false
+    },
     openedAt:{
         type: Date,
         default: Date.now
