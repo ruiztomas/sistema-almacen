@@ -1,8 +1,8 @@
 require('dotenv').config();
 
 const app=require('./app');
-const connectDB=require('./config/db');
 const expensesRoutes=require('./routes/expenses.routes');
+const salesRoutes=require('./routes/sales.routes');
 const dashboardRoutes=require('./routes/dashboard.routes');
 const authRoutes=require('./routes/auth.routes');
 const inventoryRoutes=require('./routes/inventory.routes');
@@ -13,7 +13,10 @@ const errorHandler=require('./middleware/error.middleware');
 const helmet=require("helmet");
 const rateLimit=require("express-rate-limit");
 
-connectDB();
+const pool=require('./config/postgres');
+pool.connect()
+    .then(()=>console.log("PostgreSQL conectado"))
+    .catch(err=>console.error("Error al conectar PostgreSQL", err));
 
 const PORT=process.env.PORT || 3000;
 
@@ -29,6 +32,7 @@ app.use(limiter);
 
 app.use('/api/expenses', expensesRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/sales', salesRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use("/api/cash", cashRoutes);
